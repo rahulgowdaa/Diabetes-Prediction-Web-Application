@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">Patient Assessment Results</h3>
+        </div>
+        <div class="card-body">
+            <!-- Patient Information -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h4 class="text-primary mb-3">Patient Information</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> {{ name }}</p>
+                            <p><strong>Age:</strong> {{ age }} years</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Date of Birth:</strong> {{ dob }}</p>
+                            <p><strong>Address:</strong> {{ address }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Measurements -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h4 class="text-primary mb-3">Medical Measurements</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Glucose Level</h5>
+                                    <p class="card-text display-6">{{ glucose }} <small class="text-muted">mg/dL</small></p>
+                                    <p class="text-muted">Normal Range: 70-140 mg/dL</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Blood Pressure</h5>
+                                    <p class="card-text display-6">{{ blood_pressure }} <small class="text-muted">mmHg</small></p>
+                                    <p class="text-muted">Normal Range: 90-120 mmHg</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Insulin Level</h5>
+                                    <p class="card-text display-6">{{ insulin }} <small class="text-muted">μU/mL</small></p>
+                                    <p class="text-muted">Normal Range: 2-25 μU/mL</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">BMI</h5>
+                                    <p class="card-text display-6">{{ "%.1f"|format(bmi) }}</p>
+                                    <p class="text-muted">Normal Range: 18.5-24.9</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Foot Pressure Analysis -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h4 class="text-primary mb-3">Foot Pressure Analysis</h4>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Front Foot</h5>
+                                    <p class="display-6">{{ frontfoot }} <small class="text-muted">kPa</small></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Rear Foot</h5>
+                                    <p class="display-6">{{ rearfoot }} <small class="text-muted">kPa</small></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Mid Foot Avg</h5>
+                                    <p class="display-6">{{ midfootavg }} <small class="text-muted">kPa</small></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Assessment -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <h4 class="text-primary mb-3">Risk Assessment</h4>
+                    <div class="card bg-{{ 'danger' if prediction == 1 else 'success' }} text-white">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Diabetes Risk Level</h5>
+                            <p class="display-4 mb-0">{{ 'High' if prediction == 1 else 'Low' }}</p>
+                            <p class="mt-2 mb-0">Confidence: {{ "%.1f"|format(confidence) }}%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <form method="POST" action="{{ url_for('form_submit') }}" class="d-inline">
+                        <!-- Add all hidden fields with patient data -->
+                        <input type="hidden" name="generate_pdf" value="true">
+                        <input type="hidden" name="name" value="{{ name }}">
+                        <input type="hidden" name="age" value="{{ age }}">
+                        <input type="hidden" name="dob" value="{{ dob }}">
+                        <input type="hidden" name="address" value="{{ address }}">
+                        <input type="hidden" name="frontfoot" value="{{ frontfoot }}">
+                        <input type="hidden" name="rearfoot" value="{{ rearfoot }}">
+                        <input type="hidden" name="Glucose" value="{{ glucose }}">
+                        <input type="hidden" name="BloodPressure" value="{{ blood_pressure }}">
+                        <input type="hidden" name="Insulin" value="{{ insulin }}">
+                        <input type="hidden" name="BMI" value="{{ bmi }}">
+                        <input type="hidden" name="midfootavg" value="{{ midfootavg }}">
+                        
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-file-pdf"></i> Download PDF Report
+                        </button>
+                    </form>
+                    <a href="{{ url_for('form_submit') }}" class="btn btn-secondary btn-lg ml-3">
+                        <i class="fas fa-plus"></i> New Assessment
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add custom styles -->
+<style>
+.card {
+    border-radius: 15px;
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+.display-6 {
+    font-size: 2.5rem;
+    font-weight: 300;
+    line-height: 1.2;
+}
+</style>
+{% endblock %} 

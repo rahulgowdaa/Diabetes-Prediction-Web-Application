@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Enter New Patient Diabetes Data</h2>
+    
+    <!-- Form for new data with additional fields like Name, DOB, Address -->
+    <div class="card p-4 shadow-sm animate__animated animate__fadeInUp">
+        <form method="POST" action="{{ url_for('form_submit') }}" onsubmit="return validateForm()">
+            <!-- Personal Details -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="name" class="form-label">Name</label>
+                    <input type="text" class="form-control" name="name" id="name" required>
+                    <div class="invalid-feedback">Name should contain only letters and spaces.</div>
+                </div>
+                <div class="col-md-3">
+                    <label for="age" class="form-label">Age</label>
+                    <input type="number" class="form-control" name="age" id="age" required>
+                    <div class="invalid-feedback">Please enter a valid age (between 1 and 120).</div>
+                </div>
+                <div class="col-md-3">
+                    <label for="dob" class="form-label">Date of Birth</label>
+                    <input type="date" class="form-control" name="dob" id="dob" required>
+                    <div class="invalid-feedback">Date of birth cannot be in the future.</div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="address" class="form-label">Address</label>
+                    <textarea class="form-control" name="address" id="address" rows="2" required></textarea>
+                    <div class="invalid-feedback">Please enter a valid address (at least 10 characters).</div>
+                </div>
+            </div>
+
+            <!-- Diabetes Data -->
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="frontfoot" class="form-label">Front Foot</label>
+                    <input type="number" class="form-control" name="frontfoot" id="frontfoot" required>
+                    <div class="invalid-feedback">Please enter a valid number for Front Foot.</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="rearfoot" class="form-label">Rear Foot</label>
+                    <input type="number" class="form-control" name="rearfoot" id="rearfoot" required>
+                    <div class="invalid-feedback">Please enter a valid number for Rear Foot.</div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="Glucose" class="form-label">Glucose</label>
+                    <input type="number" class="form-control" name="Glucose" id="Glucose" required>
+                    <div class="invalid-feedback">Please enter a valid Glucose value.</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="BloodPressure" class="form-label">Blood Pressure</label>
+                    <input type="number" class="form-control" name="BloodPressure" id="BloodPressure" required>
+                    <div class="invalid-feedback">Please enter a valid Blood Pressure value.</div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="Insulin" class="form-label">Insulin</label>
+                    <input type="number" class="form-control" name="Insulin" id="Insulin" required>
+                    <div class="invalid-feedback">Please enter a valid Insulin value.</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="BMI" class="form-label">BMI</label>
+                    <input type="text" class="form-control" name="BMI" id="BMI" required>
+                    <div class="invalid-feedback">Please enter a valid BMI value (e.g., 25.6).</div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="midfootavg" class="form-label">Mid Foot Avg</label>
+                    <input type="text" class="form-control" name="midfootavg" id="midfootavg" required>
+                    <div class="invalid-feedback">Please enter a valid Mid Foot Avg value.</div>
+                </div>
+            </div>
+
+            <!-- Checkbox for PDF Report -->
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="generate_pdf" id="generate_pdf">
+                <label class="form-check-label" for="generate_pdf">
+                    Generate PDF Report for the Patient
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript for Client-Side Validation -->
+<script>
+    function validateForm() {
+        let isValid = true;
+
+        // Name validation: only letters and spaces
+        const name = document.getElementById('name');
+        const nameRegex = /^[a-zA-Z\s]+$/;
+        if (!nameRegex.test(name.value)) {
+            name.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            name.classList.remove('is-invalid');
+        }
+
+        // Age validation: between 1 and 120
+        const age = document.getElementById('age');
+        if (age.value < 1 || age.value > 120) {
+            age.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            age.classList.remove('is-invalid');
+        }
+
+        // DOB validation: not in the future
+        const dob = document.getElementById('dob');
+        const today = new Date().toISOString().split('T')[0];
+        if (dob.value > today) {
+            dob.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            dob.classList.remove('is-invalid');
+        }
+
+        // Address validation: at least 10 characters
+        const address = document.getElementById('address');
+        if (address.value.length < 10) {
+            address.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            address.classList.remove('is-invalid');
+        }
+
+        return isValid; // Submit the form only if all validations pass
+    }
+</script>
+{% endblock %}

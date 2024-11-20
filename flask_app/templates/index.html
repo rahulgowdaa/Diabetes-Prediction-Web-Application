@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="text-center mb-5">
+        <h1 class="display-4">Welcome to the Diabetes Prediction App</h1>
+        <p class="lead">A web application designed to help doctors predict diabetes based on patient data.</p>
+        <hr class="my-4">
+        <p>Start by adding patient data manually, viewing existing data, or uploading a CSV file with patient information.</p>
+        <div class="d-flex justify-content-center">
+            <a class="btn btn-primary btn-lg me-2" href="{{ url_for('form_submit') }}">Add Data</a>
+            <a class="btn btn-outline-success btn-lg" href="{{ url_for('display') }}">View Data</a>
+        </div>
+    </div>
+
+    <!-- CSV Upload Form -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    <h5 class="card-title text-center">Upload Patient Data via CSV</h5>
+                    <p class="text-center">Please upload a CSV file with the correct headers to insert patient data.</p>
+                    <form action="{{ url_for('insert_csv') }}" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Choose CSV file</label>
+                            <input type="file" class="form-control" id="file" name="file" accept=".csv" required>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-outline-success">Upload CSV</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %} 

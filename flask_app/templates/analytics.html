@@ -1,0 +1,675 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2 class="text-center mb-4">Health Analytics Dashboard</h2>
+    
+    <!-- Summary Statistics Row -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Patients</h5>
+                    <h2 class="card-text">{{ total_patients }}</h2>
+                    <p class="small">Active Records</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Average BMI</h5>
+                    <h2 class="card-text">
+                        {{ "%.1f"|format(averages.bmi) }}
+                    </h2>
+                    <p class="small">kg/m²</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Average Glucose</h5>
+                    <h2 class="card-text">
+                        {{ "%.1f"|format(averages.glucose) }}
+                    </h2>
+                    <p class="small">mg/dL</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Average BP</h5>
+                    <h2 class="card-text">
+                        {{ "%.1f"|format(averages.bp) }}
+                    </h2>
+                    <p class="small">mmHg</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Age Distribution</h5>
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">BMI vs Age Correlation</h5>
+                    <canvas id="bmiChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Glucose Level Distribution</h5>
+                    <canvas id="glucoseChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Diabetes Distribution</h5>
+                    <div class="pie-chart-container">
+                        <canvas id="diabetesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blood Pressure Distribution -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Blood Pressure Distribution</h5>
+                    <canvas id="bpChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Insulin Distribution -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Insulin Distribution</h5>
+                    <canvas id="insulinChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Risk Indicators -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Health Risk Indicators</h5>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="alert {{ 'alert-danger' if (averages.glucose > 140) else 'alert-success' }}">
+                                <h6>Glucose Status</h6>
+                                <p>{{ 'High Risk' if averages.glucose > 140 else 'Normal' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="alert {{ 'alert-danger' if (averages.bmi > 30) else 'alert-success' }}">
+                                <h6>BMI Status</h6>
+                                <p>{{ 'Obese' if averages.bmi > 30 else 'Normal' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="alert {{ 'alert-danger' if (averages.bp > 140) else 'alert-success' }}">
+                                <h6>Blood Pressure Status</h6>
+                                <p>{{ 'High Risk' if averages.bp > 140 else 'Normal' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="alert {{ 'alert-danger' if ((diabetes_counts['Diabetic'] / (diabetes_counts['Diabetic'] + diabetes_counts['Non-Diabetic']) * 100) > 50) else 'alert-success' }}">
+                                <h6>Diabetes Risk</h6>
+                                <p>{{ 'High' if (diabetes_counts['Diabetic'] / (diabetes_counts['Diabetic'] + diabetes_counts['Non-Diabetic']) * 100) > 50 else 'Low' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add after existing charts -->
+    <div class="row">
+        <!-- ROC Curve -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Model ROC Curve</h5>
+                    <canvas id="rocChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Feature Importance -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Feature Importance</h5>
+                    <canvas id="featureImportanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Correlation Matrix -->
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Feature Correlation Matrix</h5>
+                    <canvas id="correlationMatrix"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prediction Distribution -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Prediction Confidence Distribution</h5>
+                    <canvas id="predictionConfidenceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Model Performance Metrics -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Model Performance Metrics</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="metric-card">
+                                <h6>Accuracy</h6>
+                                <p class="h3">{{ model_metrics.accuracy|round(3) }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="metric-card">
+                                <h6>Precision</h6>
+                                <p class="h3">{{ model_metrics.precision|round(3) }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="metric-card">
+                                <h6>Recall</h6>
+                                <p class="h3">{{ model_metrics.recall|round(3) }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="metric-card">
+                                <h6>F1 Score</h6>
+                                <p class="h3">{{ model_metrics.f1|round(3) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add required CSS -->
+<style>
+.card {
+    border-radius: 10px;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.shadow {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-title {
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+canvas {
+    max-height: 300px;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.small {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.alert {
+    margin-bottom: 0;
+    text-align: center;
+}
+
+.alert h6 {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.alert p {
+    margin-bottom: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: rgba(40, 167, 69, 0.1);
+    border-color: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+}
+
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+}
+
+.pie-chart-container {
+    position: relative;
+    margin: auto;
+    height: 300px;
+    width: 300px;
+}
+</style>
+
+<!-- Add Chart.js and required plugins -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.1.1"></script>
+
+<script>
+    // Age Distribution Chart
+    new Chart(document.getElementById('ageChart'), {
+        type: 'bar',
+        data: {
+            labels: ['20-30', '31-40', '41-50', '51-60', '61-70', '70+'],
+            datasets: [{
+                label: 'Age Distribution',
+                data: calculateAgeDistribution({{ age_data|tojson|safe }}),
+                borderColor: 'rgb(75, 192, 192)',
+                backgroundColor: 'rgba(75, 192, 192, 0.5)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Patients'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Age Groups'
+                    }
+                }
+            }
+        }
+    });
+
+    function calculateAgeDistribution(ages) {
+        const distribution = [0, 0, 0, 0, 0, 0];
+        ages.forEach(age => {
+            if (age <= 30) distribution[0]++;
+            else if (age <= 40) distribution[1]++;
+            else if (age <= 50) distribution[2]++;
+            else if (age <= 60) distribution[3]++;
+            else if (age <= 70) distribution[4]++;
+            else distribution[5]++;
+        });
+        return distribution;
+    }
+
+    // BMI Chart
+    new Chart(document.getElementById('bmiChart'), {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'BMI vs Age',
+                data: {{ age_data|tojson|safe }}.map((age, i) => ({ x: age, y: {{ bmi_data|tojson|safe }}[i] })),
+                backgroundColor: 'rgba(255, 99, 132, 0.5)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Age'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'BMI'
+                    }
+                }
+            }
+        }
+    });
+
+    // Glucose Chart
+    new Chart(document.getElementById('glucoseChart'), {
+        type: 'line',
+        data: {
+            labels: Array.from({ length: {{ glucose_data|length }} }, (_, i) => i + 1),
+            datasets: [{
+                label: 'Glucose Levels',
+                data: {{ glucose_data|tojson|safe }},
+                borderColor: 'rgb(153, 102, 255)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Glucose Level'
+                    }
+                }
+            }
+        }
+    });
+
+    // Diabetes Distribution Chart
+    new Chart(document.getElementById('diabetesChart'), {
+        type: 'pie',
+        data: {
+            labels: ['Diabetic', 'Non-Diabetic'],
+            datasets: [{
+                data: [
+                    {{ diabetes_counts['Diabetic']|default(0) }},
+                    {{ diabetes_counts['Non-Diabetic']|default(0) }}
+                ],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.5)',
+                    'rgba(75, 192, 192, 0.5)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20
+                    }
+                }
+            }
+        }
+    });
+
+    // Blood Pressure Distribution Chart
+    new Chart(document.getElementById('bpChart'), {
+        type: 'bar',
+        data: {
+            labels: ['<120', '120-129', '130-139', '140-159', '160+'],
+            datasets: [{
+                label: 'Blood Pressure Distribution',
+                data: calculateBPDistribution({{ bp_data|tojson|safe }}),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Patients'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Blood Pressure (mmHg)'
+                    }
+                }
+            }
+        }
+    });
+
+    // Insulin Distribution Chart
+    new Chart(document.getElementById('insulinChart'), {
+        type: 'bar',
+        data: {
+            labels: ['0-50', '51-100', '101-150', '151-200', '200+'],
+            datasets: [{
+                label: 'Insulin Distribution',
+                data: calculateInsulinDistribution({{ insulin_data|tojson|safe }}),
+                backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Patients'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Insulin Level'
+                    }
+                }
+            }
+        }
+    });
+
+    // Helper functions for new distributions
+    function calculateBPDistribution(bpData) {
+        const distribution = [0, 0, 0, 0, 0];
+        bpData.forEach(bp => {
+            if (bp < 120) distribution[0]++;
+            else if (bp < 130) distribution[1]++;
+            else if (bp < 140) distribution[2]++;
+            else if (bp < 160) distribution[3]++;
+            else distribution[4]++;
+        });
+        return distribution;
+    }
+
+    function calculateInsulinDistribution(insulinData) {
+        const distribution = [0, 0, 0, 0, 0];
+        insulinData.forEach(insulin => {
+            if (insulin <= 50) distribution[0]++;
+            else if (insulin <= 100) distribution[1]++;
+            else if (insulin <= 150) distribution[2]++;
+            else if (insulin <= 200) distribution[3]++;
+            else distribution[4]++;
+        });
+        return distribution;
+    }
+
+    // ROC Curve
+    new Chart(document.getElementById('rocChart'), {
+        type: 'line',
+        data: {
+            labels: {{ roc_curve.fpr|tojson|safe }},
+            datasets: [{
+                label: 'ROC Curve (AUC = {{ roc_curve.auc|round(3) }})',
+                data: {{ roc_curve.tpr|tojson|safe }},
+                borderColor: 'rgb(75, 192, 192)',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'False Positive Rate'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'True Positive Rate'
+                    }
+                }
+            }
+        }
+    });
+
+    // Feature Importance Chart
+    new Chart(document.getElementById('featureImportanceChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ feature_importance_names|tojson|safe }},
+            datasets: [{
+                label: 'Feature Importance',
+                data: {{ feature_importance_values|tojson|safe }},
+                backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Importance Score'
+                    }
+                }
+            }
+        }
+    });
+
+    // Correlation Matrix
+    new Chart(document.getElementById('correlationMatrix'), {
+        type: 'matrix',
+        data: {
+            labels: {{ correlation_matrix_labels|tojson|safe }},
+            datasets: [{
+                data: {{ correlation_matrix_values|tojson|safe }}.map((value, i) => ({
+                    x: i % {{ correlation_matrix_labels|length }},
+                    y: Math.floor(i / {{ correlation_matrix_labels|length }}),
+                    v: value
+                })).flat(),
+                backgroundColor: function(context) {
+                    const value = context.dataset.data[context.dataIndex].v;
+                    const alpha = Math.abs(value);
+                    return value > 0 
+                        ? `rgba(54, 162, 235, ${alpha})`
+                        : `rgba(255, 99, 132, ${alpha})`;
+                },
+                borderWidth: 1,
+                width: 30,
+                height: 30
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: false,
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.dataset.data[context.dataIndex].v;
+                            return `Correlation: ${value.toFixed(2)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        autoSkip: false
+                    }
+                },
+                y: {
+                    ticks: {
+                        autoSkip: false
+                    }
+                }
+            }
+        }
+    });
+
+    // Prediction Confidence Distribution
+    new Chart(document.getElementById('predictionConfidenceChart'), {
+        type: 'bar',
+        data: {
+            labels: ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'],
+            datasets: [{
+                label: 'Prediction Confidence Distribution',
+                data: {{ prediction_confidence_dist|tojson|safe }},
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Predictions'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Confidence Range'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

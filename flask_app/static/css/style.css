@@ -1,0 +1,58 @@
+/* Basic styling */
+body {
+    padding-top: 70px;
+    background-color: #f8f9fa;
+}
+
+/* Navbar styling */
+.navbar {
+    background-color: #343a40;
+}
+
+.navbar:hover {
+    background-color: #495057;
+}
+
+.nav-link {
+    font-size: 16px;
+    color: rgba(255,255,255,0.9) !important;
+}
+
+.nav-link:hover {
+    color: #00d1b2 !important;
+}
+
+/* Navbar structure */
+.navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba%28255, 255, 255, 1%29' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+.navbar-nav .nav-item {
+    margin-left: 15px;
+}
+
+.navbar-collapse {
+    justify-content: flex-end;
+}
+
+/* Form and card styling */
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-control:focus {
+    border-color: #343a40;
+    box-shadow: 0 0 0 0.2rem rgba(52, 58, 64, 0.25);
+}
+
+/* Responsive design */
+@media (max-width: 991.98px) {
+    .navbar-nav {
+        text-align: center;
+    }
+}

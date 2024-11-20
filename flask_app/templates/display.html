@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Diabetes Data</h2>
+
+        <!-- Filter and Sort Section -->
+        <div class="card p-4 shadow-sm">
+            <form method="GET" action="{{ url_for('display') }}">
+                <div class="row mb-3">
+                    <div class="col">
+                        <label for="filter_by" class="form-label">Filter By:</label>
+                        <select class="form-select" name="filter_by">
+                            <option value="">-- Select Column --</option>
+                            <option value="Glucose" {% if filter_by == 'Glucose' %}selected{% endif %}>Glucose</option>
+                            <option value="BloodPressure" {% if filter_by == 'BloodPressure' %}selected{% endif %}>Blood Pressure</option>
+                            <option value="BMI" {% if filter_by == 'BMI' %}selected{% endif %}>BMI</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label for="filter_value" class="form-label">Filter Value:</label>
+                        <input type="text" class="form-control" name="filter_value" value="{{ filter_value }}">
+                    </div>
+                    <div class="col">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary form-control">Apply Filter</button>
+                    </div>
+                </div>
+            </form>
+
+            <form method="GET" action="{{ url_for('display') }}">
+                <div class="row mb-3">
+                    <div class="col">
+                        <label for="sort_by" class="form-label">Sort By:</label>
+                        <select class="form-select" name="sort_by">
+                            <option value="id" {% if sort_by == 'id' %}selected{% endif %}>ID</option>
+                            <option value="Glucose" {% if sort_by == 'Glucose' %}selected{% endif %}>Glucose</option>
+                            <option value="BloodPressure" {% if sort_by == 'BloodPressure' %}selected{% endif %}>Blood Pressure</option>
+                            <option value="BMI" {% if sort_by == 'BMI' %}selected{% endif %}>BMI</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label for="order" class="form-label">Order:</label>
+                        <select class="form-select" name="order">
+                            <option value="asc" {% if order == 'asc' %}selected{% endif %}>Ascending</option>
+                            <option value="desc" {% if order == 'desc' %}selected{% endif %}>Descending</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-primary form-control">Apply Sort</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Download CSV Button -->
+            <form method="GET" action="{{ url_for('download_csv') }}" class="text-end">
+                <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                <input type="hidden" name="filter_value" value="{{ filter_value }}">
+                <input type="hidden" name="sort_by" value="{{ sort_by }}">
+                <input type="hidden" name="order" value="{{ order }}">
+                <button class="btn btn-success">Download CSV</button>
+            </form>
+        </div>
+
+        <!-- Table Section with light animation for table load -->
+        <div class="table-responsive mt-4 animate__animated animate__fadeInUp">
+            <table class="table table-hover table-bordered table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width: 5%;">ID</th>
+                        <th style="width: 10%;">Name</th>
+                        <th style="width: 5%;">Age</th>
+                        <th style="width: 10%;">DOB</th>
+                        <th style="width: 15%;">Address</th>
+                        <th style="width: 10%;">Front Foot</th>
+                        <th style="width: 10%;">Rear Foot</th>
+                        <th style="width: 10%;">Glucose</th>
+                        <th style="width: 10%;">Blood Pressure</th>
+                        <th style="width: 10%;">Insulin</th>
+                        <th style="width: 5%;">BMI</th>
+                        <th style="width: 5%;">Mid Foot Avg</th>
+                        <th style="width: 5%;">Outcome</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        <td>{{ row[0] }}</td> <!-- ID -->
+                        <td>{{ row[1] or 'N/A' }}</td> <!-- Name -->
+                        <td>{{ row[2] or 'N/A' }}</td> <!-- Age -->
+                        <td>{{ row[3] or 'N/A' }}</td> <!-- DOB -->
+                        <td>{{ row[4] or 'N/A' }}</td> <!-- Address -->
+                        <td>{{ row[5] }}</td> <!-- Front Foot -->
+                        <td>{{ row[6] }}</td> <!-- Rear Foot -->
+                        <td>{{ row[7] }}</td> <!-- Glucose -->
+                        <td>{{ row[8] }}</td> <!-- Blood Pressure -->
+                        <td>{{ row[9] }}</td> <!-- Insulin -->
+                        <td>{{ row[10] }}</td> <!-- BMI -->
+                        <td>{{ row[11] }}</td> <!-- Mid Foot Avg -->
+                        <td>{{ row[12] }}</td> <!-- Outcome -->
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Section with improvements -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('display', page=page-1, per_page=per_page, sort_by=sort_by, order=order, filter_by=filter_by, filter_value=filter_value) }}">Previous</a>
+                    </li>
+                {% endif %}
+
+                {% for p in range(start_page, end_page + 1) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('display', page=p, per_page=per_page, sort_by=sort_by, order=order, filter_by=filter_by, filter_value=filter_value) }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if page < total_pages %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('display', page=page+1, per_page=per_page, sort_by=sort_by, order=order, filter_by=filter_by, filter_value=filter_value) }}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+{% endblock %}

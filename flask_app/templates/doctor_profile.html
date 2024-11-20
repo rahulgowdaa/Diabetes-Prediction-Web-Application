@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Doctor Profile</h3>
+                    <a href="{{ url_for('change_password') }}" class="btn btn-light">Change Password</a>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">{{ message }}</div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" value="{{ doctor[0] }}" readonly>
+                            <small class="text-muted">Username cannot be changed</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="name" class="form-control" value="{{ doctor[1] }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ doctor[2] }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" name="phone" class="form-control" value="{{ doctor[3] }}" 
+                                   pattern="[0-9]{10}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Specialization</label>
+                            <input type="text" name="specialization" class="form-control" value="{{ doctor[4] }}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Account Created</label>
+                            <input type="text" class="form-control" value="{{ doctor[5] }}" readonly>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
